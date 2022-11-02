@@ -1,2 +1,2 @@
 # cippy
-A C++ interpreter for Python. 
+A little python interperter built in C++!
