@@ -6,14 +6,17 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include "sys.h"
 
 #define py_true "True"
 #define py_false  "False"
+#define True true
+#define False false
 
 using namespace std;
 
 string keywords[8] = {"print", "if","elif","else", "def", "(", ")", "    "};
-string conditionals[3] = {"if", "else if", "else"}; 
+string conditionals[3] = {"if", "elif", "else"}; 
 char alpha[26] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
 void print(string content){ 
@@ -60,6 +63,21 @@ void showList(vector<string> ls){
         std::cout << ele << ", ";
     }
     std::cout << "]" << endl;
+}
+
+vector<string> lex(string line){
+    string token = "";
+    vector<string> lexed_line;
+    for(char c: line){
+        if(c != ' '){
+            token += c;
+        }else{
+            lexed_line.push_back(token);
+            token = "";
+        }
+    }
+    lexed_line.push_back(token);
+    return lexed_line;
 }
 
 vector<string> parseLine(string line){
@@ -199,15 +217,52 @@ void eval(vector<vector<string>> code, map<string,string> vars){
     }
 }
 
+/**
+ * Gets all the imports from the lines in the files
+*/
+vector<string> get_imports(vector<vector<string>> lines){
+    vector<string> imports;
+    for(vector<string> line: lines){
+        bool next = false;
+        for(string word: line){
+            vector<string> words = lex(word);
 
-int main(){
+            if(words.size() == 1){
+                word = words[0];
+                if(word == "import"){
+                    next = true;
+                }
+                else if(next){
+                    imports.push_back(word);
 
+                    next = false;
+                }
+            }else{
+                for(string word: words){
+
+                    if(word == "import"){
+                        next = true;
+                    }
+                    else if(next){
+                        imports.push_back(word);
+                        next = false;
+                    }
+                }
+            }
+        }
+    }
+    return imports;
+}
+
+
+int main(int argc, char** argv){
     typedef map<string, map<string, list<string>>> dict;
 
     list<string> functions;
     vector<vector<string>> lines;
     map<string,string> vars;
-    ifstream myfile; myfile.open("test.py");
+    vector<string> imports;
+    ifstream myfile; myfile.open(argv[1]);
     string myline;
 
     if ( myfile.is_open() ) {
@@ -218,11 +273,12 @@ int main(){
         }
     }
     vars = get_variables(lines);
+    imports = get_imports(lines);
+    showList(imports);
     eval(lines, vars);
+    sys s = sys();
+    s.standard_output.write("output");
+    handle_command("sys.std.write", "");
+    
     return 0;
 }
-
-// Old Code
-// if(myline.rfind("print") == 0){
-//     print(myline.substr(7, getEnd(myline)-7));
-// }
