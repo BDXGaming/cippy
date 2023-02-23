@@ -5,8 +5,10 @@
 #include <math.h>
 #include <string>
 #include <fstream>
+#include<array> 
 #include <map>
 #include "sys.h"
+#include "calculator.h"
 
 #define py_true "True"
 #define py_false  "False"
@@ -258,12 +260,18 @@ vector<string> get_imports(vector<vector<string>> lines){
 int main(int argc, char** argv){
     typedef map<string, map<string, list<string>>> dict;
 
+    if(!(argv[1])){
+        //cout << "Does not support cmd-line interface!" << endl;
+        return 0;
+    }
+
     list<string> functions;
     vector<vector<string>> lines;
     map<string,string> vars;
     vector<string> imports;
     ifstream myfile; myfile.open(argv[1]);
     string myline;
+    vector<string> loaded_cmds; 
 
     if ( myfile.is_open() ) {
         while ( myfile ) {
@@ -277,8 +285,9 @@ int main(int argc, char** argv){
     showList(imports);
     eval(lines, vars);
     sys s = sys();
-    s.standard_output.write("output");
     handle_command("sys.std.write", "");
+    double sv = math::calc("2+2");
+    cout << endl << sv << endl;
     
     return 0;
 }
