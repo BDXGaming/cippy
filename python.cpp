@@ -261,8 +261,17 @@ int main(int argc, char** argv){
     typedef map<string, map<string, list<string>>> dict;
 
     if(!(argv[1])){
-        //cout << "Does not support cmd-line interface!" << endl;
-        return 0;
+        string input = "";
+        cout << "Loading CIPPY 0.0.1 Early Release Beta" << endl;
+        while(true){
+            cout << "\n>>>";
+            getline(cin, input);
+
+            if(input == "exit()"){
+                return 0;
+            }
+            cout << math::calc(input);
+        }        
     }
 
     list<string> functions;
@@ -286,7 +295,7 @@ int main(int argc, char** argv){
     eval(lines, vars);
     sys s = sys();
     handle_command("sys.std.write", "");
-    double sv = math::calc("2+2");
+    double sv = math::calc("(2+2)*3");
     cout << endl << sv << endl;
     
     return 0;
