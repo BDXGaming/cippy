@@ -2,6 +2,7 @@
 #include <string>
 #include <string.h>
 #include "utils.h"
+#include <map>
 
 using namespace std;
 
@@ -15,6 +16,8 @@ class Output{
 class sys{
     public:
         Output standard_output = Output();
+        // map<string, class> commands; 
+        // commands = {{"sys.stdout.write", standard_output}};
 
         static vector<string> get_module_cmds(){
             vector<string> cmds;
