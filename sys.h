@@ -1,8 +1,11 @@
-#include <iostream>
+#include <any>
+#include <map>
 #include <string>
 #include <string.h>
+#include <iostream>
+#include <functional>
+
 #include "utils.h"
-#include <map>
 
 using namespace std;
 
@@ -13,11 +16,18 @@ class Output{
         }
 };
 
+using OutputFunction = void (Output::*)(const std::string&);
+
 class sys{
     public:
-        Output standard_output = Output();
-        // map<string, class> commands; 
-        // commands = {{"sys.stdout.write", standard_output}};
+        Output standard_output;
+        std::map<std::string, std::function<void(Output*, const std::string&)>> commands;
+
+        sys() {
+            commands["sys.stdout.write"] = [](Output* out, const std::string& s) {
+                (out->*(&Output::write))(s);
+            };
+        }
 
         static vector<string> get_module_cmds(){
             vector<string> cmds;
@@ -25,13 +35,13 @@ class sys{
             return cmds;
         }
 
+        static void handle_command(string cmd, string input){
+            if(contains(sys::get_module_cmds(), cmd)){
+                sys inst = sys();
+                inst.commands[cmd](&inst.standard_output, input);
+            }else{
+                cout << "NO";
+            }
+        }
+
 };
-
-
-void handle_command(string cmd, string input){
-    if(contains(sys::get_module_cmds(), cmd)){
-        cout << "YES";
-    }else{
-        cout << "NO";
-    }
-}

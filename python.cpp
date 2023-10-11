@@ -9,6 +9,7 @@
 #include <map>
 #include "sys.h"
 #include "calculator.h"
+#include "functions.h"
 
 #define py_true "True"
 #define py_false "False"
@@ -17,16 +18,11 @@
 
 using namespace std;
 
-string keywords[8] = {"print", "if", "elif", "else", "def", "(", ")", "    "};
+string keywords[9] = {"print", "if", "elif", "else", "def", "(", ")", "    ", "sys.stdout.write"};
 string conditionals[3] = {"if", "elif", "else"};
 char nums[10] = {'0','1','2', '3', '4','5','6','7','8','9'};
 char alpha[26] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 char alphaUpper[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-
-void print(string content)
-{
-    std::cout << content << endl;
-}
 
 string strip(string input)
 {
@@ -147,7 +143,7 @@ vector<string> parseLine(string line)
     {
         parsed_line.push_back(holder);
     }
-
+    // showList(parsed_line);
     return parsed_line;
 }
 
@@ -286,6 +282,7 @@ vector<string> get_imports(vector<vector<string>> lines)
         for (string word : line)
         {
             vector<string> words = lex(word);
+            // showList(words);
 
             if (words.size() == 1)
             {
@@ -328,7 +325,6 @@ bool isMath(string input)
     for (char c : input)
     {
         if(!(ArrayUtils::contains(allowed_chars, c, 7)) && !(ArrayUtils::contains(nums, c, 10))){
-            cout << "Character " << c << " not math!" << endl;
             return false;
         }
     }
@@ -336,9 +332,33 @@ bool isMath(string input)
     return true;
 }
 
+vector<string> load_default_functions(){
+    vector<string> functions;
+    functions.push_back("print");
+    functions.push_back("exit");
+
+    return functions;
+}
+
+map<string, string> load_command_map(vector<string> funcs){
+    map<string, string> cm;
+    for(string cmd: funcs){
+        cm.insert({cmd, "local"});
+    }
+    return cm;
+}
+
 int main(int argc, char **argv)
 {
     typedef map<string, map<string, list<string>>> dict;
+
+    vector<string> functions = load_default_functions();
+    vector<vector<string>> lines;
+    map<string, string> vars;
+    vector<string> imports;
+    string myline;
+    vector<string> loaded_cmds;
+    map<string, string> command_map = load_command_map(functions);
 
     if (!(argv[1]))
     {
@@ -355,18 +375,18 @@ int main(int argc, char **argv)
             }
             if(isMath(input)){
                 cout << math::calc(input);
+            }else{
+                lines.clear();
+                // vector<string> line = lex(input);
+                vector<string> pline = parseLine(input);
+                lines.push_back(pline);
+                eval(lines,vars);
             }
         }
     }
 
-    list<string> functions;
-    vector<vector<string>> lines;
-    map<string, string> vars;
-    vector<string> imports;
     ifstream myfile;
     myfile.open(argv[1]);
-    string myline;
-    vector<string> loaded_cmds;
 
     if (myfile.is_open())
     {
@@ -379,13 +399,9 @@ int main(int argc, char **argv)
     }
     vars = get_variables(lines);
     imports = get_imports(lines);
-    showList(imports);
     eval(lines, vars);
     sys s = sys();
-    handle_command("sys.stdout.write", "Test from active command handler");
-    double sv = math::calc("(2+2)*3");
-    cout << endl
-         << sv << endl;
+    sys::handle_command("sys.stdout.write", "Test from active command handler");
 
     return 0;
 }
